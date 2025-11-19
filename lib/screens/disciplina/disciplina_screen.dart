@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:dumcapp/routes/app_routes.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:cool_alert/cool_alert.dart';
 
 class DisciplinaScreen extends StatelessWidget {
   const DisciplinaScreen({super.key});
@@ -186,17 +185,22 @@ class DisciplinaScreen extends StatelessWidget {
                           Get.snackbar('Razón requerida', 'Debes escribir el motivo antes de enviar');
                           return;
                         }
-                        CoolAlert.show(
+                        showDialog(
                           context: context,
-                          type: CoolAlertType.confirm,
-                          title: 'Confirmación',
-                          text: '¿Guardar esta entrada de disciplina?',
-                          confirmBtnText: 'Guardar',
-                          cancelBtnText: 'Cancelar',
-                          onConfirmBtnTap: () async {
-                            Get.back();
-                            await controller.submit();
-                          },
+                          builder: (_) => AlertDialog(
+                            title: const Text('Confirmación'),
+                            content: const Text('¿Guardar esta entrada de disciplina?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
+                              TextButton(
+                                onPressed: () async {
+                                  Navigator.of(context).pop();
+                                  await controller.submit();
+                                },
+                                child: const Text('Guardar'),
+                              ),
+                            ],
+                          ),
                         );
                       },
                 child: Container(
