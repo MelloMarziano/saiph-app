@@ -50,6 +50,13 @@ dependencies:
   flutter_lucide: ^1.7.0
   cool_alert: ^2.0.1
 
+dependency_overrides:
+  flare_flutter:
+    git:
+      url: https://github.com/mbfakourii/Flare-Flutter.git
+      path: flare_flutter
+      ref: remove_hashValues
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

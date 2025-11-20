@@ -226,12 +226,13 @@ packages:
     source: hosted
     version: "3.10.17"
   flare_flutter:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: flare_flutter
-      sha256: "99d63c60f00fac81249ce6410ee015d7b125c63d8278a30da81edf3317a1f6a0"
-      url: "https://pub.dev"
-    source: hosted
+      path: flare_flutter
+      ref: remove_hashValues
+      resolved-ref: d915c89bf01f1a9d5c97d9f5b2f964eb21ddf1e9
+      url: "https://github.com/mbfakourii/Flare-Flutter.git"
+    source: git
     version: "3.0.2"
   flutter:
     dependency: "direct main"
