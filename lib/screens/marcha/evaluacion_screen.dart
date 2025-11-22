@@ -468,7 +468,13 @@ class _EvaluacionMarchaScreenState extends State<EvaluacionMarchaScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Evaluadores', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                              const Text(
+                                'Evaluadores',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                               const SizedBox(height: 8),
                               TextField(
                                 controller: _evalUserController,
@@ -1298,8 +1304,10 @@ class _EvaluacionMarchaScreenState extends State<EvaluacionMarchaScreen> {
         if (!mounted) return;
         await CoolAlert.show(
           context: context,
-          type: CoolAlertType.info,
-          text: 'Ya existe una evaluación para este pelotón hecha por ti',
+          type: CoolAlertType.warning,
+          title: 'Ya evaluaste este pelotón',
+          text:
+              'No puedes guardar otra evaluación del mismo pelotón con tu usuario. Si necesitas editar, contacta al Administrador.',
         );
         Get.offAllNamed(AppRoutes.MARCHA);
       } else if (e is FirebaseException &&

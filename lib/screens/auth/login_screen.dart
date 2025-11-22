@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:cool_alert/cool_alert.dart';
 import 'package:dumcapp/routes/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -25,23 +26,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (_loading) return;
-    final email = _emailCtrl.text.trim();
+    final email = _emailCtrl.text.trim().toLowerCase();
     final pass = _passCtrl.text.trim();
     if (email.isEmpty || pass.isEmpty) {
-      Get.snackbar('Faltan datos', 'Ingresa correo y contraseña');
+      if (!mounted) return;
+      await CoolAlert.show(context: context, type: CoolAlertType.warning, title: 'Faltan datos', text: 'Ingresa correo y contraseña para continuar');
       return;
     }
     setState(() => _loading = true);
     try {
       final q = await FirebaseFirestore.instance.collection('usuarios').where('email', isEqualTo: email).limit(1).get();
       if (q.docs.isEmpty) {
-        Get.snackbar('Acceso denegado', 'Usuario no encontrado');
+        if (!mounted) return;
+        await CoolAlert.show(context: context, type: CoolAlertType.error, title: 'No pudimos iniciar sesión', text: 'No encontramos una cuenta con ese correo. Verifica el correo o contacta al coordinador.');
       } else {
         final doc = q.docs.first;
         final d = doc.data();
         final ok = (d['password'] ?? '') == pass;
         if (!ok) {
-          Get.snackbar('Acceso denegado', 'Contraseña incorrecta');
+          if (!mounted) return;
+          await CoolAlert.show(context: context, type: CoolAlertType.error, title: 'Contraseña incorrecta', text: 'La contraseña no coincide. Intenta nuevamente o solicita restablecer tu acceso.');
         } else {
           final box = GetStorage();
           await box.write('user', {
@@ -50,12 +54,14 @@ class _LoginScreenState extends State<LoginScreen> {
             'nombre': d['nombre'] ?? '',
             'rol': d['rol'] ?? '',
           });
-          Get.snackbar('Bienvenido', '${d['nombre'] ?? email}');
+          if (!mounted) return;
+          await CoolAlert.show(context: context, type: CoolAlertType.success, title: 'Bienvenido', text: '${d['nombre'] ?? email}');
           Get.offAllNamed(AppRoutes.HOME);
         }
       }
     } catch (e) {
-      Get.snackbar('Error', '$e');
+      if (!mounted) return;
+      await CoolAlert.show(context: context, type: CoolAlertType.error, title: 'No pudimos iniciar sesión', text: 'Ocurrió un problema de conexión o de servidor. Intenta de nuevo y si persiste, contacta al coordinador.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
