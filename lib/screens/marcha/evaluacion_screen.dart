@@ -269,6 +269,10 @@ class _EvaluacionMarchaScreenState extends State<EvaluacionMarchaScreen> {
   bool _expandSyncT = false;
   bool _expandFaltasG = false;
   bool _expandFaltasEst = false;
+  final TextEditingController _evalUserController = TextEditingController();
+  final TextEditingController _coEval1Controller = TextEditingController();
+  final TextEditingController _coEval2Controller = TextEditingController();
+  bool _userFieldInitialized = false;
 
   @override
   void dispose() {
@@ -346,6 +350,9 @@ class _EvaluacionMarchaScreenState extends State<EvaluacionMarchaScreen> {
     for (final st in _syncT) {
       st.comment.dispose();
     }
+    _evalUserController.dispose();
+    _coEval1Controller.dispose();
+    _coEval2Controller.dispose();
     super.dispose();
   }
 
@@ -379,6 +386,14 @@ class _EvaluacionMarchaScreenState extends State<EvaluacionMarchaScreen> {
       _faltasEstiloMilitary = _buildFaltasEstiloMilitary(p.tipoMarcha);
       _faltasEstiloSilent = _buildFaltasEstiloSilent(p.tipoMarcha);
       _faltasEstiloSoundtrack = _buildFaltasEstiloSoundtrack(p.tipoMarcha);
+    }
+    final box = GetStorage();
+    final user = box.read('user');
+    if (!_userFieldInitialized && user is Map) {
+      final nombre = (user['nombre'] ?? '').toString();
+      final email = (user['email'] ?? '').toString();
+      _evalUserController.text = nombre.isNotEmpty ? nombre : email;
+      _userFieldInitialized = true;
     }
     return Scaffold(
       appBar: AppBar(
@@ -441,6 +456,49 @@ class _EvaluacionMarchaScreenState extends State<EvaluacionMarchaScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.black12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Evaluadores', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: _evalUserController,
+                                readOnly: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Evaluador principal',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: _coEval1Controller,
+                                decoration: const InputDecoration(
+                                  labelText: 'Co-evaluador 1',
+                                  hintText: 'Nombre o email',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: _coEval2Controller,
+                                decoration: const InputDecoration(
+                                  labelText: 'Co-evaluador 2',
+                                  hintText: 'Nombre o email',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         _accordion(
                           'Criterios generales',
                           _expandGeneral,
@@ -824,6 +882,10 @@ class _EvaluacionMarchaScreenState extends State<EvaluacionMarchaScreen> {
         'cantidadMiembros': _peloton!.cantidadMiembros,
         'evaluadorNombre': evaluadorNombre,
         'evaluadorEmail': evaluadorEmail,
+        'coEvaluadores': [
+          _coEval1Controller.text.trim(),
+          _coEval2Controller.text.trim(),
+        ].where((e) => e.isNotEmpty).toList(),
         'items': _items
             .map(
               (e) => {
