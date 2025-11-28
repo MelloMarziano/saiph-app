@@ -12,8 +12,10 @@ class HomeController extends GetxController {
   final rol = ''.obs;
   final email = ''.obs;
   final RxList<Peloton> clubs = <Peloton>[].obs;
-  final RxList<Map<String, dynamic>> myEvaluations = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> pendingItems = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> myEvaluations =
+      <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> pendingItems =
+      <Map<String, dynamic>>[].obs;
   final RxBool syncing = false.obs;
 
   @override
@@ -45,14 +47,19 @@ class HomeController extends GetxController {
 
   Future<void> _loadClubs() async {
     try {
-      final snap = await FirebaseFirestore.instance
+      final snapPelotones = await FirebaseFirestore.instance
           .collection('pelotones')
           .orderBy('createdAt', descending: true)
           .limit(10)
           .get();
-      final list = snap.docs.map((d) => Peloton.fromMap(d.id, d.data())).toList();
+      final list = snapPelotones.docs
+          .map((d) => Peloton.fromMap(d.id, d.data()))
+          .toList();
       clubs.assignAll(list);
-      registeredClubs.value = snap.size;
+      final snapClubes = await FirebaseFirestore.instance
+          .collection('clubes')
+          .get();
+      registeredClubs.value = snapClubes.size;
     } catch (_) {
       // keep previous values
     }
@@ -70,12 +77,14 @@ class HomeController extends GetxController {
         query = query.where('evaluadorNombre', isEqualTo: nombre.value);
       }
       final snap = await query.get();
-      myEvaluations.assignAll(snap.docs.map((d) {
-        final Map<String, dynamic> data = d.data() as Map<String, dynamic>;
-        final m = Map<String, dynamic>.from(data);
-        m['id'] = d.id;
-        return m;
-      }));
+      myEvaluations.assignAll(
+        snap.docs.map((d) {
+          final Map<String, dynamic> data = d.data() as Map<String, dynamic>;
+          final m = Map<String, dynamic>.from(data);
+          m['id'] = d.id;
+          return m;
+        }),
+      );
       completedEvaluations.value = snap.size;
     } catch (_) {
       // keep previous values
@@ -86,7 +95,10 @@ class HomeController extends GetxController {
     final box = GetStorage();
     final list = box.read('pending_sync_evaluaciones');
     if (list is List) {
-      final casted = list.whereType<Map>().map((m) => m.map((k, v) => MapEntry('$k', v))).toList();
+      final casted = list
+          .whereType<Map>()
+          .map((m) => m.map((k, v) => MapEntry('$k', v)))
+          .toList();
       pendingItems.assignAll(casted);
       pendingSync.value = casted.length;
     } else {
@@ -109,7 +121,9 @@ class HomeController extends GetxController {
           continue;
         }
         try {
-          final ref = FirebaseFirestore.instance.collection('evaluaciones_marcha').doc(docId);
+          final ref = FirebaseFirestore.instance
+              .collection('evaluaciones_marcha')
+              .doc(docId);
           await FirebaseFirestore.instance.runTransaction((t) async {
             final snap = await t.get(ref);
             if (snap.exists) {

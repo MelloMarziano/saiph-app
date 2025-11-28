@@ -37,10 +37,14 @@ class HomeScreen extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Obx(() => Text(
-                                controller.rol.value.isEmpty ? 'Usuario' : controller.rol.value,
-                                style: const TextStyle(color: Colors.white),
-                              )),
+                          Obx(
+                            () => Text(
+                              controller.rol.value.isEmpty
+                                  ? 'Usuario'
+                                  : controller.rol.value,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
                           const SizedBox(width: 8),
                           GestureDetector(
                             onTap: controller.onSignOut,
@@ -59,13 +63,15 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Obx(() => Text(
-                            '¡Bienvenido, ${controller.nombre.value.isEmpty ? 'Usuario' : controller.nombre.value}!',
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          )),
+                      Obx(
+                        () => Text(
+                          '¡Bienvenido, ${controller.nombre.value.isEmpty ? 'Usuario' : controller.nombre.value}!',
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       const Text(
                         'Camporee 2025 - Sistema de Evaluación',
@@ -90,16 +96,24 @@ class HomeScreen extends StatelessWidget {
                         Colors.orange,
                       ),
                       const SizedBox(height: 8),
-                      Obx(() => controller.pendingSync.value > 0
-                          ? Align(
-                              alignment: Alignment.centerLeft,
-                              child: ElevatedButton.icon(
-                                onPressed: controller.syncing.value ? null : controller.syncPendingNow,
-                                icon: const Icon(Icons.sync),
-                                label: Text(controller.syncing.value ? 'Sincronizando…' : 'Sincronizar ahora'),
-                              ),
-                            )
-                          : const SizedBox.shrink()),
+                      Obx(
+                        () => controller.pendingSync.value > 0
+                            ? Align(
+                                alignment: Alignment.centerLeft,
+                                child: ElevatedButton.icon(
+                                  onPressed: controller.syncing.value
+                                      ? null
+                                      : controller.syncPendingNow,
+                                  icon: const Icon(Icons.sync),
+                                  label: Text(
+                                    controller.syncing.value
+                                        ? 'Sincronizando…'
+                                        : 'Sincronizar ahora',
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                       const SizedBox(height: 24),
                       _actionTile(
                         color: Colors.blue,
@@ -129,116 +143,117 @@ class HomeScreen extends StatelessWidget {
                         color: Colors.purple,
                         icon: Icons.flag,
                         title: 'Marcha',
-                        subtitle: 'Evaluación de participación y orden',
-                        onTap: () => Get.toNamed(AppRoutes.MARCHA),
+                        subtitle: 'Módulo deshabilitado',
+                        onTap: () => Get.snackbar(
+                          'Módulo deshabilitado',
+                          'Marcha no está habilitado',
+                        ),
                       ),
                       const SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       const Text(
-                        'Clubes registrados',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                        'Mis evaluaciones completadas',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 8),
-                      Obx(() => Column(
-                            children: controller.clubs
-                                .map((c) => Container(
-                                      width: double.infinity,
-                                      margin: const EdgeInsets.only(bottom: 8),
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: Colors.black12),
+                      Obx(
+                        () => Column(
+                          children: controller.myEvaluations
+                              .map(
+                                (e) => Container(
+                                  width: double.infinity,
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.black12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        (e['pelotonNombre'] ?? '') as String,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(c.nombre, style: const TextStyle(fontWeight: FontWeight.w700)),
-                                                const SizedBox(height: 2),
-                                                Text('Instructor: ${c.instructor}', style: const TextStyle(color: Colors.black54)),
-                                              ],
-                                            ),
-                                          ),
-                                          Text(c.tipoMarcha, style: const TextStyle(color: Colors.deepPurple)),
-                                        ],
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Total: ${(e['totalParcial'] ?? 0)}',
+                                        style: const TextStyle(
+                                          color: Colors.black54,
+                                        ),
                                       ),
-                                    ))
-                                .toList(),
-                          )),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () => Get.toNamed(AppRoutes.MARCHA),
-                          child: const Text('Ver todos'),
+                                    ],
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                       const SizedBox(height: 24),
                       const Text(
-                        'Mis evaluaciones completadas',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 8),
-                      Obx(() => Column(
-                            children: controller.myEvaluations
-                                .map((e) => Container(
-                                      width: double.infinity,
-                                      margin: const EdgeInsets.only(bottom: 8),
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: Colors.black12),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text((e['pelotonNombre'] ?? '') as String, style: const TextStyle(fontWeight: FontWeight.w700)),
-                                          const SizedBox(height: 2),
-                                          Text('Total: ${(e['totalParcial'] ?? 0)}', style: const TextStyle(color: Colors.black54)),
-                                        ],
-                                      ),
-                                    ))
-                                .toList(),
-                          )),
-                      const SizedBox(height: 24),
-                      const Text(
                         'Pendientes de sincronización',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 8),
-                      Obx(() => Column(
-                            children: controller.pendingItems
-                                .map((e) => Container(
-                                      width: double.infinity,
-                                      margin: const EdgeInsets.only(bottom: 8),
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: Colors.black12),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text('${(e['data']?['pelotonNombre'] ?? '')}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                                                const SizedBox(height: 2),
-                                                Text('Evaluador: ${e['data']?['evaluadorNombre'] ?? e['data']?['evaluadorEmail'] ?? ''}', style: const TextStyle(color: Colors.black54)),
-                                              ],
+                      Obx(
+                        () => Column(
+                          children: controller.pendingItems
+                              .map(
+                                (e) => Container(
+                                  width: double.infinity,
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.black12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${(e['data']?['pelotonNombre'] ?? '')}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                             ),
-                                          ),
-                                          const Icon(Icons.cloud_off, color: Colors.orange),
-                                        ],
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Evaluador: ${e['data']?['evaluadorNombre'] ?? e['data']?['evaluadorEmail'] ?? ''}',
+                                              style: const TextStyle(
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ))
-                                .toList(),
-                          )),
+                                      const Icon(
+                                        Icons.cloud_off,
+                                        color: Colors.orange,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -352,5 +367,4 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
 }
