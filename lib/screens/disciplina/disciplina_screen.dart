@@ -216,6 +216,52 @@ class DisciplinaScreen extends StatelessWidget {
                       'Zona: ${club.zona} • Miembros: ${club.cantidadMiembros}',
                       style: const TextStyle(color: Colors.black54),
                     ),
+                    const SizedBox(height: 12),
+                    Obx(
+                      () => controller.isAdmin
+                          ? Align(
+                              alignment: Alignment.centerLeft,
+                              child: GestureDetector(
+                                onTap: () {
+                                  CoolAlert.show(
+                                    context: context,
+                                    type: CoolAlertType.confirm,
+                                    title: 'Confirmación',
+                                    text:
+                                        '¿Resetear toda la disciplina de este club?',
+                                    confirmBtnText: 'Resetear',
+                                    cancelBtnText: 'Cancelar',
+                                    showCancelBtn: true,
+                                    onConfirmBtnTap: () async {
+                                      Navigator.of(
+                                        context,
+                                        rootNavigator: true,
+                                      ).pop();
+                                      await controller.resetClubDiscipline();
+                                    },
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Resetear disciplina del club',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                   ],
                 ),
               ),
@@ -325,6 +371,44 @@ class DisciplinaScreen extends StatelessWidget {
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
+                                              ),
+                                              Obx(
+                                                () => controller.isAdmin
+                                                    ? GestureDetector(
+                                                        onTap: () {
+                                                          CoolAlert.show(
+                                                            context: context,
+                                                            type: CoolAlertType
+                                                                .confirm,
+                                                            title:
+                                                                'Eliminar registro',
+                                                            text:
+                                                                '¿Eliminar este registro de disciplina?',
+                                                            confirmBtnText:
+                                                                'Eliminar',
+                                                            cancelBtnText:
+                                                                'Cancelar',
+                                                            showCancelBtn: true,
+                                                            onConfirmBtnTap:
+                                                                () async {
+                                                                  Navigator.of(
+                                                                    context,
+                                                                    rootNavigator:
+                                                                        true,
+                                                                  ).pop();
+                                                                  await controller
+                                                                      .deleteLog(
+                                                                        log.id,
+                                                                      );
+                                                                },
+                                                          );
+                                                        },
+                                                        child: const Icon(
+                                                          LucideIcons.trash,
+                                                          color: Colors.red,
+                                                        ),
+                                                      )
+                                                    : const SizedBox.shrink(),
                                               ),
                                             ],
                                           ),

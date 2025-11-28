@@ -19,6 +19,7 @@ class DisciplinaController extends GetxController {
   final RxBool isSubmitting = false.obs;
   String currentNombre = '';
   String currentEmail = '';
+  final RxString rol = ''.obs;
   final RxInt baselineYellow = 0.obs;
   final RxInt baselineBlue = 0.obs;
   final RxInt baselineRed = 0.obs;
@@ -32,6 +33,7 @@ class DisciplinaController extends GetxController {
     if (user is Map) {
       currentNombre = (user['nombre'] ?? '').toString();
       currentEmail = (user['email'] ?? '').toString();
+      rol.value = (user['rol'] ?? '').toString();
     }
   }
 
@@ -94,6 +96,11 @@ class DisciplinaController extends GetxController {
     searchQuery.value = v;
   }
 
+  bool get isAdmin {
+    final r = rol.value.trim().toLowerCase();
+    return r == 'admin' || r.contains('administrador');
+  }
+
   void setZone(String? v) {
     zoneFilter.value = (v ?? '').trim();
   }
@@ -127,7 +134,7 @@ class DisciplinaController extends GetxController {
       final addYellow = math.max(0, yellow.value - baselineYellow.value);
       final addBlue = math.max(0, blue.value - baselineBlue.value);
       final addRed = math.max(0, red.value - baselineRed.value);
-      await _addEntry(
+      final newId = await _addEntry(
         selectedClub.value!,
         reason.value,
         addYellow,
@@ -137,6 +144,7 @@ class DisciplinaController extends GetxController {
       logs.insert(
         0,
         DisciplineLog(
+          id: newId,
           author: (currentNombre.isNotEmpty ? currentNombre : currentEmail),
           createdAt: now,
           reason: reason.value,
@@ -166,14 +174,14 @@ class DisciplinaController extends GetxController {
     }
   }
 
-  Future<void> _addEntry(
+  Future<String> _addEntry(
     Club club,
     String reason,
     int yellowCount,
     int blueCount,
     int redCount,
   ) async {
-    await FirebaseFirestore.instance
+    final ref = await FirebaseFirestore.instance
         .collection('disciplinas')
         .doc(club.id)
         .collection('registros')
@@ -189,6 +197,7 @@ class DisciplinaController extends GetxController {
               : currentEmail),
           'createdAt': FieldValue.serverTimestamp(),
         });
+    return ref.id;
   }
 
   Future<void> loadLogs() async {
@@ -212,6 +221,7 @@ class DisciplinaController extends GetxController {
           dt = DateTime.now();
         }
         return DisciplineLog(
+          id: d.id,
           author: (data['creadoPor'] ?? data['author'] ?? '') as String,
           createdAt: dt,
           reason: (data['reason'] ?? '') as String,
@@ -249,6 +259,37 @@ class DisciplinaController extends GetxController {
     isLogsLoading.value = false;
   }
 
+  Future<void> resetClubDiscipline() async {
+    final club = selectedClub.value;
+    if (club == null) return;
+    isLogsLoading.value = true;
+    try {
+      final col = FirebaseFirestore.instance
+          .collection('disciplinas')
+          .doc(club.id)
+          .collection('registros');
+      final snap = await col.get();
+      final batch = FirebaseFirestore.instance.batch();
+      for (final d in snap.docs) {
+        batch.delete(d.reference);
+      }
+      await batch.commit();
+      logs.clear();
+      baselineYellow.value = 0;
+      baselineBlue.value = 0;
+      baselineRed.value = 0;
+      yellow.value = 0;
+      blue.value = 0;
+      red.value = 0;
+      clubFlags[club.id] = const FlagSummary(yellow: 0, blue: 0, red: 0);
+      Get.snackbar('Reinicio', 'Disciplina del club reseteada');
+    } catch (_) {
+      Get.snackbar('Error', 'No se pudo resetear la disciplina');
+    } finally {
+      isLogsLoading.value = false;
+    }
+  }
+
   Future<void> loadClubFlagSummary(String clubId) async {
     if (clubFlags.containsKey(clubId)) return;
     final snap = await FirebaseFirestore.instance
@@ -275,6 +316,45 @@ class DisciplinaController extends GetxController {
       sumR += r;
     }
     clubFlags[clubId] = FlagSummary(yellow: sumY, blue: sumB, red: sumR);
+  }
+
+  Future<void> deleteLog(String logId) async {
+    final club = selectedClub.value;
+    if (club == null) return;
+    isLogsLoading.value = true;
+    try {
+      await FirebaseFirestore.instance
+          .collection('disciplinas')
+          .doc(club.id)
+          .collection('registros')
+          .doc(logId)
+          .delete();
+      logs.removeWhere((l) => l.id == logId);
+      int sumY = 0;
+      int sumB = 0;
+      int sumR = 0;
+      for (final l in logs) {
+        sumY += l.yellowCount;
+        sumB += l.blueCount;
+        sumR += l.redCount;
+      }
+      baselineYellow.value = sumY;
+      baselineBlue.value = sumB;
+      baselineRed.value = sumR;
+      yellow.value = baselineYellow.value;
+      blue.value = baselineBlue.value;
+      red.value = baselineRed.value;
+      clubFlags[club.id] = FlagSummary(
+        yellow: baselineYellow.value,
+        blue: baselineBlue.value,
+        red: baselineRed.value,
+      );
+      Get.snackbar('Eliminado', 'Registro de disciplina eliminado');
+    } catch (_) {
+      Get.snackbar('Error', 'No se pudo eliminar el registro');
+    } finally {
+      isLogsLoading.value = false;
+    }
   }
 }
 
@@ -306,6 +386,7 @@ class Club {
 }
 
 class DisciplineLog {
+  final String id;
   final String author;
   final DateTime createdAt;
   final String reason;
@@ -313,6 +394,7 @@ class DisciplineLog {
   final int blueCount;
   final int redCount;
   DisciplineLog({
+    required this.id,
     required this.author,
     required this.createdAt,
     required this.reason,
