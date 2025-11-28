@@ -49,6 +49,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.3
   flutter_lucide: ^1.7.0
   cool_alert: ^2.0.1
+  fl_chart: ^0.69.0
 
 dependency_overrides:
   flare_flutter:

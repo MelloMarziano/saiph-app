@@ -849,7 +849,7 @@ class DisciplinaScreen extends StatelessWidget {
   }) {
     final selected =
         (controller.zoneFilter.value.isEmpty && value.isEmpty) ||
-        controller.zoneFilter.value == value;
+        _normZone(controller.zoneFilter.value) == _normZone(value);
     return GestureDetector(
       onTap: () => controller.setZone(value),
       child: Container(
@@ -945,5 +945,12 @@ class DisciplinaScreen extends StatelessWidget {
     final a = parts.first[0];
     final b = parts.length > 1 ? parts.last[0] : '';
     return (a + b).toUpperCase();
+  }
+
+  String _normZone(String s) {
+    final lower = s.toLowerCase().trim();
+    final m = RegExp(r"\d+").firstMatch(lower);
+    if (m != null) return m.group(0)!;
+    return lower;
   }
 }

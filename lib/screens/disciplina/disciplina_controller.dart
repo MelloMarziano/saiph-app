@@ -110,12 +110,16 @@ class DisciplinaController extends GetxController {
     final z = zoneFilter.value.trim().toLowerCase();
     return clubes.where((c) {
       final nameOk = q.isEmpty || c.nombre.toLowerCase().contains(q);
-      final zoneOk =
-          z.isEmpty ||
-          c.zona.toLowerCase() == z ||
-          c.zona.toLowerCase().startsWith(z);
+      final zoneOk = z.isEmpty || _normZone(c.zona) == _normZone(z);
       return nameOk && zoneOk;
     }).toList();
+  }
+
+  String _normZone(String s) {
+    final lower = s.toLowerCase().trim();
+    final m = RegExp(r"\d+").firstMatch(lower);
+    if (m != null) return m.group(0)!;
+    return lower;
   }
 
   Future<void> submit() async {

@@ -17,6 +17,7 @@ class HomeController extends GetxController {
   final RxList<Map<String, dynamic>> pendingItems =
       <Map<String, dynamic>>[].obs;
   final RxBool syncing = false.obs;
+  final RxMap<String, int> zoneCounts = <String, int>{}.obs;
 
   @override
   void onInit() {
@@ -60,9 +61,35 @@ class HomeController extends GetxController {
           .collection('clubes')
           .get();
       registeredClubs.value = snapClubes.size;
+      final counts = <String, int>{};
+      for (final d in snapClubes.docs) {
+        final data = d.data();
+        final raw = (data['zona'] ?? '').toString();
+        final key = _normZone(raw);
+        if (key.isEmpty) continue;
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
+      zoneCounts.assignAll(_sortedZones(counts));
     } catch (_) {
       // keep previous values
     }
+  }
+
+  Map<String, int> _sortedZones(Map<String, int> input) {
+    final entries = input.entries.toList();
+    entries.sort((a, b) {
+      final ai = int.tryParse(a.key) ?? 0;
+      final bi = int.tryParse(b.key) ?? 0;
+      return ai.compareTo(bi);
+    });
+    return {for (final e in entries) e.key: e.value};
+  }
+
+  String _normZone(String s) {
+    final lower = s.toLowerCase().trim();
+    final m = RegExp(r"\d+").firstMatch(lower);
+    if (m != null) return m.group(0)!;
+    return lower;
   }
 
   Future<void> _loadMyEvaluations() async {

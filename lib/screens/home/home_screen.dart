@@ -1,5 +1,6 @@
 import 'package:dumcapp/screens/home/home_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
 import 'package:dumcapp/routes/app_routes.dart';
 
@@ -78,22 +79,32 @@ class HomeScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 16, color: Colors.black54),
                       ),
                       const SizedBox(height: 16),
-                      _metricCard(
-                        controller.completedEvaluations,
-                        'Evaluaciones completadas',
-                        Colors.deepPurple,
-                      ),
-                      const SizedBox(height: 12),
-                      _metricCard(
-                        controller.registeredClubs,
-                        'Clubes registrados',
-                        Colors.green,
-                      ),
-                      const SizedBox(height: 12),
-                      _metricCard(
-                        controller.pendingSync,
-                        'Pendientes de sincronización',
-                        Colors.orange,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _smallMetricCard(
+                              controller.completedEvaluations,
+                              'Evaluaciones',
+                              Colors.deepPurple,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _smallMetricCard(
+                              controller.registeredClubs,
+                              'Clubes',
+                              Colors.green,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _smallMetricCard(
+                              controller.pendingSync,
+                              'Pendientes',
+                              Colors.orange,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       Obx(
@@ -115,6 +126,16 @@ class HomeScreen extends StatelessWidget {
                             : const SizedBox.shrink(),
                       ),
                       const SizedBox(height: 24),
+                      const Text(
+                        'Clubes por zona',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Obx(() => _zoneBarChart(controller.zoneCounts)),
+                      const SizedBox(height: 12),
                       _actionTile(
                         color: Colors.blue,
                         icon: Icons.assignment,
@@ -295,6 +316,269 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _smallMetricCard(RxInt count, String label, Color color) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Obx(
+            () => Text(
+              '${count.value}',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _zoneBarChart(Map<String, int> data) {
+    if (data.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.black12),
+        ),
+        child: const Text('No hay datos'),
+      );
+    }
+    final entries = data.entries.toList();
+    final maxY = entries
+        .map((e) => e.value)
+        .fold<int>(0, (a, b) => a > b ? a : b)
+        .toDouble();
+    final palette = <Color>[
+      Colors.deepPurple,
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.red,
+      Colors.amber,
+      Colors.pink,
+      Colors.teal,
+      Colors.indigo,
+      Colors.brown,
+    ];
+    final groups = <BarChartGroupData>[];
+    for (int i = 0; i < entries.length; i++) {
+      final e = entries[i];
+      final color = palette[i % palette.length];
+      groups.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: e.value.toDouble(),
+              color: color,
+              width: 18,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ],
+          // no tooltip indicators; números se muestran mediante topTitles
+        ),
+      );
+    }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: SizedBox(
+        height: 220,
+        child: BarChart(
+          BarChartData(
+            maxY: maxY + (maxY * 0.15),
+            gridData: FlGridData(
+              show: true,
+              horizontalInterval: maxY <= 4 ? 1 : (maxY / 4).ceilToDouble(),
+              drawVerticalLine: false,
+            ),
+            borderData: FlBorderData(show: false),
+            barTouchData: BarTouchData(enabled: false),
+            titlesData: FlTitlesData(
+              topTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 18,
+                  getTitlesWidget: (value, meta) {
+                    final i = value.toInt();
+                    if (i < 0 || i >= entries.length) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        '${entries[i].value}',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 32,
+                  getTitlesWidget: (value, meta) => Text(
+                    '${value.toInt()}',
+                    style: const TextStyle(fontSize: 10, color: Colors.black54),
+                  ),
+                ),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) {
+                    final i = value.toInt();
+                    if (i < 0 || i >= entries.length) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Z${entries[i].key}',
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            barGroups: groups,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _zonePieChart(Map<String, int> data) {
+    if (data.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.black12),
+        ),
+        child: const Text('No hay datos'),
+      );
+    }
+    // total no requerido, se omiten labels dentro del gráfico
+    final palette = <Color>[
+      Colors.deepPurple,
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.red,
+      Colors.amber,
+      Colors.pink,
+      Colors.teal,
+      Colors.indigo,
+      Colors.brown,
+    ];
+    final sections = <PieChartSectionData>[];
+    int idx = 0;
+    data.forEach((zone, count) {
+      final color = palette[idx % palette.length];
+      final value = count.toDouble();
+      sections.add(
+        PieChartSectionData(color: color, value: value, title: '', radius: 46),
+      );
+      idx++;
+    });
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 160,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 1,
+                centerSpaceRadius: 28,
+                sections: sections,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(spacing: 6, runSpacing: 6, children: _zoneLegend(data, palette)),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _zoneLegend(Map<String, int> data, List<Color> palette) {
+    final widgets = <Widget>[];
+    int idx = 0;
+    data.forEach((zone, count) {
+      final color = palette[idx % palette.length];
+      widgets.add(
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'Z$zone ($count)',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      idx++;
+    });
+    return widgets;
   }
 
   Widget _actionTile({
