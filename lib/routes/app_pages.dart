@@ -7,6 +7,8 @@ import '../screens/home/home_binding.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/disciplina/disciplina_binding.dart';
 import '../screens/disciplina/disciplina_screen.dart';
+import '../screens/pase_lista/pase_lista_binding.dart';
+import '../screens/pase_lista/pase_lista_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/splash_screen.dart';
 import 'app_routes.dart';
@@ -39,6 +41,11 @@ class AppPages {
       name: AppRoutes.DISCIPLINA,
       page: () => const DisciplinaScreen(),
       binding: DisciplinaBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.PASE_LISTA,
+      page: () => const PaseListaScreen(),
+      binding: PaseListaBinding(),
     ),
 
     // GetPage(

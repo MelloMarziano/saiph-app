@@ -5,4 +5,5 @@ class AppRoutes {
   static const MARCHA = '/marcha';
   static const DISCIPLINA = '/disciplina';
   static const MARCHA_EVALUACION = '/marcha/evaluacion';
+  static const PASE_LISTA = '/pase-lista';
 }

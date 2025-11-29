@@ -156,8 +156,8 @@ class HomeScreen extends StatelessWidget {
                         color: Colors.green,
                         icon: Icons.groups,
                         title: 'Pase de Lista',
-                        subtitle: 'Control de asistencia en 10 eventos',
-                        onTap: () => Get.snackbar('Acceso', 'Pase de Lista'),
+                        subtitle: 'Control de asistencia por eventos',
+                        onTap: () => Get.toNamed(AppRoutes.PASE_LISTA),
                       ),
                       const SizedBox(height: 12),
                       _actionTile(
