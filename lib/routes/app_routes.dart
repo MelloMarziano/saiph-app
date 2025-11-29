@@ -6,4 +6,5 @@ class AppRoutes {
   static const DISCIPLINA = '/disciplina';
   static const MARCHA_EVALUACION = '/marcha/evaluacion';
   static const PASE_LISTA = '/pase-lista';
+  static const UNIFORMIDAD = '/uniformidad';
 }

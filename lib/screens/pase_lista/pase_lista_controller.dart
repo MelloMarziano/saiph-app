@@ -19,6 +19,7 @@ class PaseListaController extends GetxController {
   final RxInt remoteAusentes = 0.obs;
   final RxList<String> remoteClubesPresentes = <String>[].obs;
   final RxList<String> remoteClubesAusentes = <String>[].obs;
+  final RxBool completado = false.obs;
 
   @override
   void onInit() {
@@ -66,6 +67,10 @@ class PaseListaController extends GetxController {
           final la = (data['clubesAusentes'] ?? []) as List<dynamic>;
           remoteClubesPresentes.assignAll(lp.map((e) => e.toString()));
           remoteClubesAusentes.assignAll(la.map((e) => e.toString()));
+          final status = (data['status'] ?? '').toString();
+          final cerradoFlag = (data['cerrado'] ?? false) == true;
+          completado.value =
+              cerradoFlag || status.toLowerCase() == 'completado';
           // si ya cargamos clubes, sincronizamos ausentes locales
           if (clubes.isNotEmpty) {
             final ids = clubes
@@ -110,6 +115,7 @@ class PaseListaController extends GetxController {
   void toggleAusente(Club c) {
     final e = selected.value;
     if (e == null) return;
+    if (completado.value) return;
     final doc = FirebaseFirestore.instance
         .collection('pase_lista_eventos')
         .doc(e.id);
@@ -166,11 +172,13 @@ class PaseListaController extends GetxController {
           'clubesPresentes': presentes,
           'clubesAusentes': aus,
           'cerrado': true,
+          'status': 'Completado',
           'closedAt': FieldValue.serverTimestamp(),
           'cerradoPor': nombreUsuario.value.isNotEmpty
               ? nombreUsuario.value
               : emailUsuario.value,
         });
+    completado.value = true;
   }
 
   String _normZone(String s) {

@@ -137,11 +137,11 @@ class HomeScreen extends StatelessWidget {
                       Obx(() => _zoneBarChart(controller.zoneCounts)),
                       const SizedBox(height: 12),
                       _actionTile(
-                        color: Colors.blue,
-                        icon: Icons.assignment,
-                        title: 'Evaluación Uniformidad',
-                        subtitle: 'Evalúa diseño, insignias y presentación',
-                        onTap: () => Get.snackbar('Acceso', 'Uniformidad'),
+                        color: Colors.indigo,
+                        icon: Icons.assignment_turned_in,
+                        title: 'Uniformidad',
+                        subtitle: 'Evaluaciones por club',
+                        onTap: () => Get.toNamed(AppRoutes.UNIFORMIDAD),
                       ),
                       const SizedBox(height: 12),
                       _actionTile(

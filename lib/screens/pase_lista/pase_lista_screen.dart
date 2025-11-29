@@ -265,30 +265,37 @@ class PaseListaScreen extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    GestureDetector(
-                      onTap: () async {
-                        await controller.guardarPase();
-                        Get.snackbar('Guardado', 'Pase de lista cerrado');
-                        controller.selected.value = null;
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.deepPurple,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'Guardar pase',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
+                    Obx(() {
+                      final locked = controller.completado.value;
+                      return GestureDetector(
+                        onTap: locked
+                            ? null
+                            : () async {
+                                await controller.guardarPase();
+                                Get.snackbar(
+                                  'Guardado',
+                                  'Evento marcado como Completado',
+                                );
+                              },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: locked ? Colors.black12 : Colors.deepPurple,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            locked ? 'Completado' : 'Guardar pase',
+                            style: TextStyle(
+                              color: locked ? Colors.black54 : Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   ],
                 ),
               ),
