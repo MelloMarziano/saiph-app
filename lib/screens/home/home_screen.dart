@@ -164,11 +164,8 @@ class HomeScreen extends StatelessWidget {
                         color: Colors.purple,
                         icon: Icons.flag,
                         title: 'Marcha',
-                        subtitle: 'Módulo deshabilitado',
-                        onTap: () => Get.snackbar(
-                          'Módulo deshabilitado',
-                          'Marcha no está habilitado',
-                        ),
+                        subtitle: 'Marchas...',
+                        onTap: () => Get.toNamed(AppRoutes.MARCHA),
                       ),
                       const SizedBox(height: 24),
                       const SizedBox(height: 24),
