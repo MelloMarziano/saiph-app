@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirecting…</title>
+    <meta http-equiv="refresh" content="0; url=./" />
+    <script>
+      // Fallback for browsers ignoring meta refresh
+      (function () {
+        var base = './';
+        try {
+          var p = window.location.pathname;
+          var parts = p.split('/');
+          // Ensure we redirect to the repository root on GitHub Pages
+          var repoRoot = parts.slice(0, parts.length - 1).join('/') + '/';
+          // Prefer relative root for project pages
+          window.location.replace(base);
+        } catch (e) {
+          window.location.href = base;
+        }
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
